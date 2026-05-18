@@ -1,9 +1,11 @@
 import numpy as np
 from enum import Enum
 import random
+from aima.search import UndirectedGraph
 
 WIDTH = 12
 HEIGHT = 12
+COST = 1
 
 class PieceType(Enum):
     EMPTY = 0
@@ -15,6 +17,11 @@ class PieceType(Enum):
 class Board():
     def __init__(self):
         self.board = np.zeros((WIDTH, HEIGHT), dtype=int)
+        self.coins = {
+            PieceType.BRONZE: [],
+            PieceType.SILVER: [],
+            PieceType.GOLD: []
+        }
 
     def _can_place_wall(self, pos, length, direction):
         for i in range(length):
@@ -56,6 +63,7 @@ class Board():
                     pos = np.array([random.randint(0, WIDTH - 1), random.randint(0, HEIGHT - 1)])
                     if self.board[pos[1], pos[0]] == PieceType.EMPTY.value:
                         self.board[pos[1], pos[0]] = coin_type.value
+                        self.coins[coin_type].append(pos)
                         break
 
     def populate(self):
@@ -71,6 +79,30 @@ class Board():
                 break
 
         return pos
+    def to_graph(self):
+        
+        graph_dict = {}
+        for y in range(HEIGHT):
+            for x in range(WIDTH):
+                if self.board[y, x] == PieceType.WALL.value:
+                    continue
+
+                graph_dict[(x, y)] = {}
+
+                for j in range(y - 1, y + 2):
+                    for i in range(x - 1, x + 2):
+                        if x == i and y == j: continue
+                        if i < 0 or i >= WIDTH: continue
+                        if j < 0 or j >= HEIGHT: continue
+                        if abs(i - x) == 1 and abs(j - y) == 1: continue
+                        if self.board[j, i] == PieceType.WALL.value: continue
+
+                        graph_dict[(x, y)][(i, j)] = COST
+        
+        graph = UndirectedGraph(graph_dict)
+        return graph
+
+
 
 if __name__ == "__main__":
     board = Board()
@@ -78,3 +110,4 @@ if __name__ == "__main__":
     board.populate()
 
     print(board.board)
+    graph = board.to_graph()
