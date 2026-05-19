@@ -1,6 +1,8 @@
-from board import Board
+from board import Board, PieceType
 from searcher import find_best_route
 import numpy as np
+from board import WIDTH as BOARD_WIDTH
+from board import HEIGHT as BOARD_HEIGHT
 
 class Game:
     def __init__(self):
@@ -37,5 +39,13 @@ class Game:
         self._init_board()
 
     def move_player(self, direction: np.ndarray):
+        new_pos = self.player_pos + direction
+        is_outside = new_pos[0] < 0 or new_pos[0] >= BOARD_WIDTH or new_pos[1] < 0 or new_pos[1] >= BOARD_HEIGHT
+
+        if is_outside or self.get_piece(new_pos[0], new_pos[1]) == PieceType.WALL.value:
+            return False
+        
         self.player_pos += direction
         self._update_best_route()
+
+        return True
