@@ -30,6 +30,9 @@ class Game:
         self.best_route = (total_cost, full_path, sequence)
         self.initial_best_route = self.best_route
 
+    def get_piece(self, x, y):
+        return self.board.board[y, x]
+
     def start(self):
         self._init_board()
 
