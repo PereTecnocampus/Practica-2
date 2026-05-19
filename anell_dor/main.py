@@ -12,7 +12,7 @@ import math
 
 WIDTH = 800
 HEIGHT = 800
-SCALE = WIDTH // (BOARD_WIDTH + 2)
+SCALE = WIDTH // (BOARD_WIDTH + 6)
 
 game = Game()
 
