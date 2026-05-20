@@ -10,27 +10,36 @@ class Game:
         self.player_pos = np.array([0, 0])
         self.initial_best_route = None
         self.best_route = None
+        self.steps_taken = 0
+        self.max_steps = 0
+        self.state = "PLAYING" 
+        
+        self.bronze_collected = 0
+        self.silver_collected = 0
 
     def _update_best_route(self):
-        self.best_route = find_best_route(self.board, tuple(self.player_pos))
+        result = find_best_route(self.board, tuple(self.player_pos))
+        if result:
+            self.best_route = result
 
     def _init_board(self):
-        self.board = Board()
-
         result = None
-
         while result == None:
+            self.board = Board()
             self.board.populate()
-
             raw_spawn = self.board.get_valid_spawn_pos()
             spawn_pos = (int(raw_spawn[0]), int(raw_spawn[1]))
             self.player_pos = np.array(spawn_pos)
-            
             result = find_best_route(self.board, spawn_pos)
 
         total_cost, full_path, sequence = result
         self.best_route = (total_cost, full_path, sequence)
         self.initial_best_route = self.best_route
+        self.max_steps = total_cost + 5
+        self.steps_taken = 0
+        self.state = "PLAYING"
+        self.bronze_collected = 0
+        self.silver_collected = 0
 
     def get_piece(self, x, y):
         return self.board.board[y, x]
@@ -39,6 +48,9 @@ class Game:
         self._init_board()
 
     def move_player(self, direction: np.ndarray):
+        if self.state != "PLAYING":
+            return False
+
         new_pos = self.player_pos + direction
         is_outside = new_pos[0] < 0 or new_pos[0] >= BOARD_WIDTH or new_pos[1] < 0 or new_pos[1] >= BOARD_HEIGHT
 
@@ -46,6 +58,27 @@ class Game:
             return False
         
         self.player_pos += direction
-        self._update_best_route()
+        self.steps_taken += 1
+        
+        if self.steps_taken > self.max_steps:
+            self.state = "LOST"
+            return True
+
+        piece = self.get_piece(new_pos[0], new_pos[1])
+
+        if piece == PieceType.BRONZE.value:
+            self.board.remove_coin(new_pos, PieceType.BRONZE)
+            self.bronze_collected += 1
+        elif piece == PieceType.SILVER.value:
+            if self.bronze_collected == 6:
+                self.board.remove_coin(new_pos, PieceType.SILVER)
+                self.silver_collected += 1
+        elif piece == PieceType.GOLD.value:
+            if self.silver_collected == 3:
+                self.board.remove_coin(new_pos, PieceType.GOLD)
+                self.state = "WON"
+            
+        if self.state == "PLAYING":
+            self._update_best_route()
 
         return True
