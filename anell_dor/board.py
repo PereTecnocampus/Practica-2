@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 import random
-from aima.search import UndirectedGraph
+from aima.search import Graph
 
 WIDTH = 12
 HEIGHT = 12
@@ -81,6 +81,7 @@ class Board():
         self.coins[coin_type] = new_coins
 
     def to_graph(self, current_coin: PieceType):
+        
         graph_dict = {}
         for y in range(HEIGHT):
             for x in range(WIDTH):
@@ -88,16 +89,17 @@ class Board():
                     continue
 
                 graph_dict[(x, y)] = {}
+
                 for j in range(y - 1, y + 2):
                     for i in range(x - 1, x + 2):
                         if x == i and y == j: continue
                         if i < 0 or i >= WIDTH: continue
                         if j < 0 or j >= HEIGHT: continue
                         if abs(i - x) == 1 and abs(j - y) == 1: continue
-                        if self.board[j, i] == PieceType.WALL.value: continue
+                        if not self.board[j, i] in (PieceType.EMPTY.value, current_coin.value): continue
 
                         graph_dict[(x, y)][(i, j)] = COST
         
-        graph = UndirectedGraph(graph_dict)
+        graph = Graph(graph_dict, directed=True)
         return graph
 

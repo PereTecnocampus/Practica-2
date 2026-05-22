@@ -56,13 +56,6 @@ class Game:
 
         if is_outside or self.get_piece(new_pos[0], new_pos[1]) == PieceType.WALL.value:
             return False
-        
-        self.player_pos += direction
-        self.steps_taken += 1
-        
-        if self.steps_taken > self.max_steps:
-            self.state = "LOST"
-            return True
 
         piece = self.get_piece(new_pos[0], new_pos[1])
 
@@ -73,10 +66,21 @@ class Game:
             if self.bronze_collected == 6:
                 self.board.remove_coin(new_pos, PieceType.SILVER)
                 self.silver_collected += 1
+            else:
+                return False
         elif piece == PieceType.GOLD.value:
             if self.silver_collected == 3:
                 self.board.remove_coin(new_pos, PieceType.GOLD)
                 self.state = "WON"
+            else:
+                return False
+            
+        self.player_pos += direction
+        self.steps_taken += 1
+        
+        if self.steps_taken > self.max_steps:
+            self.state = "LOST"
+            return True
             
         if self.state == "PLAYING":
             self._update_best_route()
