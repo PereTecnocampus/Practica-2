@@ -68,18 +68,18 @@ def draw_board(renderer):
                 draw_coin(renderer, x, y, piece)
 
 def draw_player(renderer, tx, x, y, last_dir):
+
     sx, sy = board_to_screen(x, y)
+
     r = sdl2.SDL_Rect()
     r.x = sx - SCALE // 2
     r.y = sy - SCALE // 2
     r.w, r.h = SCALE, SCALE
 
-    angle = math.degrees(math.atan2(last_dir[1], last_dir[0]))
-    flip = sdl2.SDL_FLIP_NONE if last_dir[0] >= 0 else sdl2.SDL_FLIP_HORIZONTAL
-    if tx:
-        sdl2.SDL_RenderCopyEx(renderer.renderer, tx.tx, None, r, angle, None, flip)
-    else:
-        sdl2.sdlgfx.filledCircleColor(renderer.renderer, sx, sy, SCALE // 2, 0xFFFFFFFF)
+    angle = math.degrees(math.atan(last_dir[1] / last_dir[0]))
+    flip = sdl2.SDL_FLIP_NONE if last_dir[0] != 1 else sdl2.SDL_FLIP_HORIZONTAL
+
+    sdl2.SDL_RenderCopyEx(renderer.renderer, tx.tx, None, r, angle, None, flip)
 
 def draw_route(renderer, route, color, single_step=False):
     if not route or len(route) < 2: return
